@@ -1,0 +1,26 @@
+<div class="cart-container" *ngIf="(items$ | async)?.length">
+
+  <h3>Tu Pedido</h3>
+
+  <div class="cart-item" *ngFor="let item of items$ | async">
+    <div>
+      <strong>{{ item.product.name }}</strong>
+      <p>x{{ item.quantity }}</p>
+    </div>
+
+    <div class="price">
+      ${{ item.product.price * item.quantity }}
+    </div>
+
+    <button (click)="remove(item.product.id)">✕</button>
+  </div>
+
+  <hr>
+
+  <div class="totals">
+    <p>Subtotal: ${{ subtotal }}</p>
+    <p>IVA (15%): ${{ tax }}</p>
+    <h4>Total: ${{ total }}</h4>
+  </div>
+
+</div>

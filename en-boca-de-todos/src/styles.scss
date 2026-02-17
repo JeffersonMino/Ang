@@ -1,0 +1,32 @@
+/* You can add global styles to this file, and also import other style files */
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* VARIABLES DE MARCA */
+:root {
+  --primary-blue: #0D2C54;
+  --secondary-blue: #1E4C8F;
+  --accent-yellow: #FFC300;
+  --accent-red: #E63946;
+  --light-bg: #F9FAFB;
+}
+
+/* GLOBAL */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--light-bg);
+  color: #222;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 600;
+  transition: 0.3s ease;
+}

@@ -1,0 +1,6 @@
+flutter:
+  web:
+    renderer: html
+    scheme: https
+    host: localhost
+    port: 5000
