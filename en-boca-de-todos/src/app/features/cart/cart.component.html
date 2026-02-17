@@ -21,6 +21,62 @@
     <p>Subtotal: ${{ subtotal }}</p>
     <p>IVA (15%): ${{ tax }}</p>
     <h4>Total: ${{ total }}</h4>
+    
+  <div class="button-container">
+    <button (click)="openDeliveryModal()">
+      Pedido a domicilio
+    </button>
   </div>
+ <div class="comprobante-card">
+
+  <h4>Comprobante (opcional)</h4>
+
+  <div class="radio-group">
+    <label>
+      <input type="radio"
+             name="comprobante"
+             (change)="seleccionarComprobante('factura')">
+      Factura
+    </label>
+
+    <label>
+      <input type="radio"
+             name="comprobante"
+             (change)="seleccionarComprobante('nota')">
+      Nota de venta
+    </label>
+  </div>
+
+  <div *ngIf="comprobante === 'factura' && datosFactura"
+       class="factura-form">
+
+    <input type="text" placeholder="RUC"
+           [(ngModel)]="datosFactura.ruc"
+           (ngModelChange)="updateDatosFactura()" />
+
+    <input type="text" placeholder="Razón Social"
+           [(ngModel)]="datosFactura.razonSocial"
+           (ngModelChange)="updateDatosFactura()" />
+
+    <input type="text" placeholder="Dirección Fiscal"
+           [(ngModel)]="datosFactura.direccionFiscal"
+           (ngModelChange)="updateDatosFactura()" />
+
+    <input type="email" placeholder="Correo"
+           [(ngModel)]="datosFactura.correo"
+           (ngModelChange)="updateDatosFactura()" />
+
+    <input type="text" placeholder="Teléfono"
+           [(ngModel)]="datosFactura.telefono"
+           (ngModelChange)="updateDatosFactura()" />
+
+  </div>
+</div>
+  <app-delivery-modal
+    *ngIf="showDeliveryModal"
+    [items]="cart"
+    [total]="total"
+    (closeModal)="showDeliveryModal = false">
+  </app-delivery-modal>
 
 </div>
