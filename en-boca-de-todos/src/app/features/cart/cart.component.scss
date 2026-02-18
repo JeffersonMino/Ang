@@ -129,3 +129,31 @@ button:hover {
   justify-content: center;
   margin-top: 20px;
 }
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+button.confirmado {
+  background: #4caf50;
+}
+
+button.confirmado:hover {
+  background: #43a047;
+}
+
+.whatsapp-btn {
+  background: #25d366;
+}
+
+.whatsapp-btn:hover {
+  background: #1ebe5d;
+}

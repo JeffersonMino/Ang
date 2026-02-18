@@ -21,10 +21,35 @@
     <p>Subtotal: ${{ subtotal }}</p>
     <p>IVA (15%): ${{ tax }}</p>
     <h4>Total: ${{ total }}</h4>
-    
+  
+  </div>
+
   <div class="button-container">
-    <button (click)="openDeliveryModal()">
-      Pedido a domicilio
+  <button
+    class="whatsapp-btn"
+    [disabled]="carritoVacio"
+    (click)="enviarWhatsApp()">
+    📲 Confirmar por WhatsApp
+  </button>
+</div>
+
+  <div class="button-container">
+   <button
+      [disabled]="carritoVacio || procesando"
+      [class.confirmado]="pedidoConfirmado"
+      (click)="openDeliveryModal()">
+
+      <ng-container *ngIf="!procesando && !pedidoConfirmado">
+        🚚 Pedido a domicilio
+      </ng-container>
+
+      <ng-container *ngIf="procesando">
+        ⏳ Procesando pedido...
+      </ng-container>
+
+      <ng-container *ngIf="pedidoConfirmado">
+        ✅ Pedido confirmado
+      </ng-container>
     </button>
   </div>
  <div class="comprobante-card">
