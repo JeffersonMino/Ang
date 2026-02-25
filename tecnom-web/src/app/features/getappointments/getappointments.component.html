@@ -1,0 +1,28 @@
+<div class="appointments-container">
+
+  <h2>Turnos creados</h2>
+
+  <mat-card *ngFor="let a of appointments" class="appointment-card">
+
+    <div class="card-header">
+      <div>
+        <h3>{{ ['workshopName'] }}</h3>
+        <p class="date">
+          {{ a['appointmentAt'] | date:'medium' }}
+        </p>
+      </div>
+
+      <span class="service">
+        {{ a.serviceType }}
+      </span>
+    </div>
+
+    <div class="contact">
+      <p><strong>Cliente:</strong> {{ a['contact']['name'] }}</p>
+      <p><strong>Email:</strong> {{ a['contact']['email'] }}</p>
+      <p><strong>Teléfono:</strong> {{ a['contact']['phone'] }}</p>
+    </div>
+
+  </mat-card>
+
+</div>

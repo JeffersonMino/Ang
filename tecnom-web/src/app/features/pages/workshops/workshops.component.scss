@@ -1,0 +1,46 @@
+.workshops-container {
+  max-width: 900px;
+  margin: 40px auto;
+  display: grid;
+  gap: 20px;
+}
+
+.workshop-card {
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.workshop-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+mat-card-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+}
+
+.status-badge.active {
+  background-color: #2e7d32;
+}
+
+.status-badge.inactive {
+  background-color: #c62828;
+}

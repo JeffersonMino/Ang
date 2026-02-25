@@ -1,0 +1,51 @@
+<h2>Crear Turno</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+
+  <div class="row">
+    <mat-form-field appearance="outline">
+      <mat-label>Taller</mat-label>
+      <mat-select formControlName="placeId">
+        <mat-option *ngFor="let w of workshops" [value]="w.id">
+          {{ w.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Fecha</mat-label>
+      <input matInput type="datetime-local" formControlName="appointmentAt">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Servicio</mat-label>
+      <input matInput formControlName="serviceType">
+    </mat-form-field>
+  </div>
+
+  <h3>Datos de contacto</h3>
+
+  <div formGroupName="contact" class="row">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="name">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Teléfono</mat-label>
+      <input matInput formControlName="phone">
+    </mat-form-field>
+  </div>
+
+  <button mat-raised-button color="primary" type="submit">
+    Crear Turno
+  </button>
+
+</form>
+
+<app-getappointments></app-getappointments>
