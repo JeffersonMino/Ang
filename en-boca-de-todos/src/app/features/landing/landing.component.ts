@@ -4,6 +4,7 @@ import { PRODUCTS } from '../../models/product.data';
 import { ProductCardComponent } from '../products/product-card/product-card.component';
 import { CartComponent } from '../cart/cart.component';
 
+
 @Component({
   selector: 'app-landing',
   standalone: true,

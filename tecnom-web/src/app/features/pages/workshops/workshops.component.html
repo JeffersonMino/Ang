@@ -1,0 +1,16 @@
+<div class="workshops-container">
+  <mat-card *ngFor="let w of workshops" class="workshop-card">
+
+    <div class="card-header">
+      <mat-card-title>{{ w.name }}</mat-card-title>
+
+      <span 
+        class="status-badge"
+        [ngClass]="w.active ? 'active' : 'inactive'">
+        {{ w.active ? 'Activo' : 'Inactivo' }}
+      </span>
+    </div>
+
+  </mat-card>
+</div>
+<app-create-appointment> </app-create-appointment>

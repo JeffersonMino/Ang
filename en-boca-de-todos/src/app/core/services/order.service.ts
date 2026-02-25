@@ -6,9 +6,15 @@ import { Product } from '../../models/product.model';
   providedIn: 'root'
 })
 export class OrderService {
-
+  private comprobante: 'factura' | 'nota' | null = null;
   private items: { product: Product; quantity: number }[] = [];
-
+  private datosFactura: any = {
+    ruc: '',
+    razonSocial: '',
+    direccionFiscal: '',
+    correo: '',
+    telefono: ''
+  };
   private itemsSubject = new BehaviorSubject(this.items);
   items$ = this.itemsSubject.asObservable();
 
@@ -36,4 +42,43 @@ export class OrderService {
       0
     );
   }
+
+  clearCart() {
+    this.items = [];
+    this.itemsSubject.next(this.items);
+  }
+
+
+  setComprobante(tipo: 'factura' | 'nota' | null) {
+    this.comprobante = tipo;
+  }
+
+  getComprobante() {
+    return this.comprobante;
+  }
+
+  setDatosFactura(datos: any) {
+    this.datosFactura = { ...this.datosFactura, ...datos };
+  }
+
+  getDatosFactura() {
+    return this.datosFactura ?? {
+      ruc: '',
+      razonSocial: '',
+      direccionFiscal: '',
+      correo: '',
+      telefono: ''
+    };
+  }
+
+  clearDatosFactura() {
+    this.datosFactura = {
+      ruc: '',
+      razonSocial: '',
+      direccionFiscal: '',
+      correo: '',
+      telefono: ''
+    };
+  }
+ 
 }
