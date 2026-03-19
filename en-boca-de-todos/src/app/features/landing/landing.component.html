@@ -10,7 +10,7 @@
 </section>
 
 <!-- SECCIÓN DE PRODUCTOS -->
-<section class="menu">
+<!-- <section class="menu">
   <h2>Nuestro Menú</h2>
 
   <div class="grid">
@@ -19,7 +19,34 @@
       [product]="product">
     </app-product-card>
   </div>
-</section>
+</section> -->
+<section class="menu-fan">
 
+  <div
+    class="fan-item"
+    *ngFor="let cat of categories"
+    [class.active]="activeCategory === cat"
+    (click)="toggleCategory(cat, $event)"
+  >
+
+    <!-- 🔥 BANNER -->
+    <div class="fan-banner">
+    <!-- <div class="fan-banner" [ngStyle]="{'background-image': 'url(assets/img/' + cat + '.jpg)'}"> -->
+      <h2>{{ cat }}</h2>
+    </div>
+
+    <!-- 📦 CONTENIDO -->
+    <div class="fan-content">
+
+      <app-product-card
+        *ngFor="let product of groupedProducts[cat]"
+        [product]="product">
+      </app-product-card>
+
+    </div>
+
+  </div>
+
+</section>
 <!-- CARRITO -->
 <app-cart></app-cart>

@@ -1,77 +1,67 @@
 import { Product } from './product.model';
 
-export const PRODUCTS: Product[] = [
+export const PRODUCTS = [
   {
     id: '1',
-    name: 'Salchipapas',
-    description: 'Papas fritas con salchicha y salsas',
+    name: 'Simple',
     price: 5,
-    category: 'Papas',
-    image: '',
-    taxRate: 0.15
+    image: 'assets/img/salchipapas.jpg',
+    category: 'Salchipapas'
   },
   {
     id: '2',
     name: 'Papi Pollo',
-    description: 'Papas con pollo frito',
-    price: 6,
-    category: 'Pollo',
-    image: '',
-    taxRate: 0.15
+    price: 7,
+    image: 'assets/img/papi-pollo.jpg',
+    category: 'Salchipapas'
   },
   {
     id: '3',
-    name: 'Hamburguesa Completa',
-    description: 'Carne, queso, lechuga y tomate',
+    name: 'Papi Carne',
     price: 7,
-    category: 'Hamburguesas',
-    image: '',
-    taxRate: 0.15
+    image: 'assets/img/papi-pollo.jpg',
+    category: 'Salchipapas'
   },
-    {
+  {
+    id: '3',
+    name: 'Papi JR',
+    price: 7,
+    image: 'assets/img/papi-pollo.jpg',
+    category: 'Salchipapas'
+  },
+  {
     id: '4',
-    name: 'Hamburguesa simple',
-    description: 'Carne, queso, lechuga y tomate',
-    price: 7,
-    category: 'Hamburguesas',
-    image: '',
-    taxRate: 0.15
+    name: 'Hamburguesa Completa',
+    price: 6,
+    image: 'assets/img/hamburguesa.jpg',
+    category: 'Hamburguesas'
   },
-    {
+  {
     id: '5',
-    name: 'Hamburguesa doble',
-    description: 'Carne, queso, lechuga y tomate',
-    price: 7,
-    category: 'Hamburguesas',
-    image: '',
-    taxRate: 0.15
+    name: 'Alitas BBQ',
+    price: 8,
+    image: 'assets/img/alitas.jpg',
+    category: 'Alitas'
   },
-    {
+  {
     id: '6',
-    name: 'Hamburguesa triple',
-    description: 'Carne, queso, lechuga y tomate',
-    price: 8,
-    category: 'Hamburguesas',
-    image: '',
-    taxRate: 0.15
+    name: 'Sánduche de Milanesa',
+    price: 5,
+    image: 'assets/img/milanesa.jpg',
+    category: 'Sanduches'
   },
-    {
-    id: '7',
-    name: 'Hamburguesa doble',
-    description: 'Carne, queso, lechuga y tomate',
-    price: 7,
-    category: 'Hamburguesas',
-    image: '',
-    taxRate: 0.15
+  {
+    id: '6',
+    name: 'Salsa tariyaqu',
+    price: 5,
+    image: 'assets/img/milanesa.jpg',
+    category: 'Especiales'
   },
-    {
-    id: '8',
-    name: 'Hamburguesa triple',
-    description: 'Carne, queso, lechuga y tomate',
-    price: 8,
-    category: 'Hamburguesas',
-    image: '',
-    taxRate: 0.15
-  }
-  
+   {
+    id: '6',
+    name: 'Coca - cola 500ml',
+    price: 2.50,
+    image: 'assets/img/milanesa.jpg',
+    category: 'Bebidas'
+   },
 ];

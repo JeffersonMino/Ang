@@ -49,31 +49,23 @@
   transform: scale(1.05);
 }
 
-/* MENU */
-/*
-.menu {
-  padding: 80px 10%;
-  background: #5e9fe0;
-  text-align: center;
-}
-*/
-.menu {
-  padding: 80px 10%;
-  text-align: center;
-  background: linear-gradient(
-    135deg,
-    #d7fbc2,
-    #6798eb,
-    #c2ffd8,
-    #fceabb
-  );
-}
+// .menu {
+//   padding: 80px 10%;
+//   text-align: center;
+//   background: linear-gradient(
+//     135deg,
+//     #d7fbc2,
+//     #6798eb,
+//     #c2ffd8,
+//     #fceabb
+//   );
+// }
 
-.menu h2 {
-  font-size: 2rem;
-  margin-bottom: 3rem;
-  font-weight: 700;
-}
+// .menu h2 {
+//   font-size: 2rem;
+//   margin-bottom: 3rem;
+//   font-weight: 700;
+// }
 
 .grid {
   display: grid;
@@ -85,11 +77,118 @@
 
 .cart-section {
   padding: 80px 10%;
-  background: #ffffff;
+  background: #cc7070;
 }
 
 .cart-section h2 {
   text-align: center;
   margin-bottom: 2rem;
   font-size: 2rem;
+}
+
+
+.menu-fan {
+  display: flex;
+  height: 80vh;
+  overflow: hidden;
+  background: linear-gradient(
+     135deg,
+     #d7fbc2,
+     #6798eb,
+     #c2ffd8,
+     #fceabb
+   );
+}
+
+/* ITEM */
+.fan-item {
+  display: flex;
+  width: 80px;
+  transition: all 0.5s ease;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ACTIVO (SE EXPANDE) */
+.fan-item.active {
+  width: 100%;
+}
+
+/* BANNER (LO QUE SIEMPRE SE VE) */
+.fan-banner {
+  width: 80px;
+  min-width: 80px;
+  background: linear-gradient(135deg, #ff5722, #ff9800);
+  color: rgb(14, 13, 13);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+
+  font-weight: bold;
+}
+
+/* CONTENIDO OCULTO */
+.fan-content {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* CUANDO SE ABRE */
+.fan-item.active .fan-content {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* PRODUCTOS */
+.fan-content app-product-card {
+  min-width: 220px;
+}
+
+.fan-item:hover {
+  width: 100%;
+}
+
+.fan-content {
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+
+  .menu-fan {
+    display: flex;
+    height: 50vh;
+    overflow: hidden;
+  }
+
+  .fan-item {
+    display: flex;
+    width: 80px;
+    transition: all 0.5s ease;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .fan-item.active {
+    width: 100%;
+  }
+
+  /* 🔥 TEXTO NORMAL EN CELULAR */
+  .fan-banner {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+
+  }
+
+  .fan-content {
+    overflow-x: auto;
+  }
 }
