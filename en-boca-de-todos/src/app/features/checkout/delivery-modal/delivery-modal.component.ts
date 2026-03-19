@@ -116,8 +116,60 @@ export class DeliveryModalComponent implements AfterViewInit, OnInit {
       telefono: this.telefono
     });
 
-    this.resetForm();
-    this.closeModal.emit();
+    const telefonoNegocio = '593999999999'; // 🔥 TU NÚMERO
+
+      const ticket = this.generarTicket();
+      const fecha = new Date().toLocaleString();
+
+      let mensaje = `🎟 *Ticket:* ${ticket}%0A`;
+      mensaje += `🕒 ${fecha}%0A%0A`;
+
+      mensaje += '🍽️ *Pedido*%0A%0A';
+
+      // 🛒 Productos
+      this.items.forEach(item => {
+        mensaje += `• ${item.product.name} x${item.quantity} - $${item.product.price * item.quantity}%0A`;
+      });
+
+      mensaje += `%0A💰 *Total:* $${this.total}%0A%0A`;
+
+      // 🧾 Comprobante
+      const comprobante = this.orderService.getComprobante();
+
+      if (comprobante) {
+        mensaje += `🧾 Comprobante: ${comprobante}%0A`;
+      }
+
+      // 🏢 Factura
+      const datosFactura = this.orderService.getDatosFactura();
+
+      if (comprobante === 'factura' && datosFactura) {
+        mensaje += `%0A📋 *Datos de Factura*%0A`;
+        mensaje += `RUC: ${datosFactura.ruc}%0A`;
+        mensaje += `Razón Social: ${datosFactura.razonSocial}%0A`;
+        mensaje += `Dirección Fiscal: ${datosFactura.direccionFiscal}%0A`;
+        mensaje += `Correo: ${datosFactura.correo}%0A`;
+        mensaje += `Teléfono: ${datosFactura.telefono}%0A`;
+      }
+
+      // 📍 DELIVERY
+      mensaje += `%0A📍 *Entrega*%0A`;
+      mensaje += `Dirección: ${this.direccionSeleccionada}%0A`;
+      mensaje += `Correo: ${this.correo}%0A`;
+      mensaje += `Teléfono: ${this.telefono}%0A%0A`;
+
+      mensaje += `🙏 Gracias por su pedido`;
+
+      const url = `https://wa.me/${telefonoNegocio}?text=${mensaje}`;
+
+      window.open(url, '_blank');
+
+      // 🔥 Limpieza total
+      this.orderService.clearCart();
+      this.orderService.clearDatosFactura();
+
+      this.resetForm();
+      this.closeModal.emit();
   }
 
   cerrar() {
@@ -125,6 +177,7 @@ export class DeliveryModalComponent implements AfterViewInit, OnInit {
     this.closeModal.emit();
   }
 
+  
   private resetForm() {
     this.direccionSeleccionada = '';
     this.correo = '';
@@ -135,4 +188,15 @@ export class DeliveryModalComponent implements AfterViewInit, OnInit {
     this.orderService.setDatosFactura(this.datosFactura);
   }
 
+  generarTicket(): string {
+    const fecha = new Date();
+
+    const año = fecha.getFullYear().toString().slice(-2);
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const dia = fecha.getDate().toString().padStart(2, '0');
+
+    const random = Math.floor(Math.random() * 900 + 100);
+
+    return `TK-${año}${mes}${dia}-${random}`;
+  }
 }
