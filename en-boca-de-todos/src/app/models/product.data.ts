@@ -5,28 +5,28 @@ export const PRODUCTS = [
     id: '1',
     name: 'Simple',
     price: 5,
-    image: 'assets/img/salchipapas.jpg',
+    image: '/Comida/Salchipapa1.png',
     category: 'Salchipapas'
   },
   {
     id: '2',
     name: 'Papi Pollo',
     price: 7,
-    image: 'assets/img/papi-pollo.jpg',
+    image: '/Comida/SalchiPollo1.png',
     category: 'Salchipapas'
   },
   {
     id: '3',
     name: 'Papi Carne',
     price: 7,
-    image: 'assets/img/papi-pollo.jpg',
+    image: '/Comida/PapoCarne1.png',
     category: 'Salchipapas'
   },
   {
     id: '3',
     name: 'Papi JR',
     price: 7,
-    image: 'assets/img/papi-pollo.jpg',
+    image: '/Comida/Salchipapa1.png',
     category: 'Salchipapas'
   },
   {

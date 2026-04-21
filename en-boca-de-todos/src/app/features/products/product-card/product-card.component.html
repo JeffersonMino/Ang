@@ -1,6 +1,7 @@
 <div class="card" [class.bump]="added">
 
   <h4>{{ product.name }}</h4>
+  <div><img [src]="product.image" [alt]="product.name"></div>
   <p>{{ product.description }}</p>
   <strong>${{ product.price }}</strong>
 
