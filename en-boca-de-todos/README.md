@@ -1,6 +1,32 @@
-# EnBocaDeTodos
+# En Boca De Todos
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.17.
+
+## CRM, API y base local
+
+La aplicacion ya incluye una API Express integrada al servidor SSR y una base local persistente:
+
+```bash
+npm run serve:crm
+```
+
+Abre `http://localhost:4000/`. La API queda disponible bajo `/api` y guarda datos en:
+
+```txt
+server-data/en-boca-de-todos.db.json
+```
+
+El esquema recomendado para PostgreSQL/Supabase esta en `database/schema.sql`.
+
+Credenciales seed local:
+
+```txt
+Usuario: admin
+Clave: Boca2026!
+Codigo: 250426
+```
+
+Para produccion, crea la base con variables de entorno `EBT_ADMIN_USERNAME`, `EBT_ADMIN_PASSWORD`, `EBT_ADMIN_CONFIRMATION_CODE` y `EBT_DATABASE_FILE`.
 
 ## Development server
 
@@ -11,6 +37,8 @@ ng serve
 ```
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+Para probar login admin, pedidos persistentes y CRM con base de datos, usa el servidor SSR en `http://localhost:4000/`.
 
 ## Code scaffolding
 

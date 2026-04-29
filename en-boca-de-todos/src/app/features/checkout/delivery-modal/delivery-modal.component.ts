@@ -1,10 +1,25 @@
-import { Component, AfterViewInit, Output, EventEmitter, Input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  PLATFORM_ID,
+  inject
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../../environments/environment';
+import {
+  InvoiceData,
+  OrderService
+} from '../../../core/services/order.service';
+import { OrderStoreService } from '../../../core/services/order-store.service';
+import { Order } from '../../../models/order.model';
 import { Product } from '../../../models/product.model';
-import { OrderService } from '../../../core/services/order.service';
 
-declare var google: any;
+declare const google: any;
 
 @Component({
   selector: 'app-delivery-modal',
@@ -14,63 +29,146 @@ declare var google: any;
   styleUrls: ['./delivery-modal.component.scss']
 })
 export class DeliveryModalComponent implements AfterViewInit, OnInit {
-
   @Input() items: { product: Product; quantity: number }[] = [];
-  @Input() total: number = 0;
+  @Input() subtotal = 0;
+  @Input() tax = 0;
+  @Input() total = 0;
+  @Input() customerDraft = {
+    name: '',
+    phone: '',
+    email: '',
+    notes: ''
+  };
 
   @Output() closeModal = new EventEmitter<void>();
+  @Output() orderPlaced = new EventEmitter<Order>();
+
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   comprobanteSeleccionado: 'factura' | 'nota' | null = null;
+  validationMessage = '';
+  mapReady = false;
 
   map: any;
   marker: any;
-
+  customerName = '';
   direccionSeleccionada = '';
   correo = '';
   telefono = '';
-  datosFactura: any = {
+  referencias = '';
+  datosFactura: InvoiceData = {
     ruc: '',
     razonSocial: '',
     direccionFiscal: '',
     correo: '',
     telefono: ''
   };
-  constructor(private orderService: OrderService) {
+
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly orderStore: OrderStoreService
+  ) {
     const datos = this.orderService.getDatosFactura();
 
     if (datos) {
       this.datosFactura = datos;
     }
-
-    this.comprobanteSeleccionado = this.orderService.getComprobante();
   }
 
-   
-  
   ngOnInit() {
     this.comprobanteSeleccionado = this.orderService.getComprobante();
-    this.comprobanteSeleccionado = this.orderService.getComprobante();
+    this.customerName = this.customerDraft.name;
+    this.correo = this.customerDraft.email;
+    this.telefono = this.customerDraft.phone;
+    this.referencias = this.customerDraft.notes;
   }
 
   ngAfterViewInit(): void {
-    const checkGoogle = setInterval(() => {
-      if (typeof google !== 'undefined') {
-        clearInterval(checkGoogle);
+    if (!this.isBrowser) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      if (typeof google !== 'undefined' && google.maps) {
         this.initMap();
       }
     }, 200);
   }
 
-  initMap() {
-    const defaultLocation = { lat: -0.1807, lng: -78.4678 };
+  confirmarPedido() {
+    if (!this.customerName.trim() || !this.direccionSeleccionada.trim() || !this.telefono.trim()) {
+      this.validationMessage =
+        'Completa nombre, telefono y direccion para confirmar el domicilio.';
+      return;
+    }
 
-    this.map = new google.maps.Map(
-      document.getElementById('map') as HTMLElement,
-      {
-        center: defaultLocation,
-        zoom: 15
+    if (this.comprobanteSeleccionado === 'factura') {
+      const { ruc, razonSocial, direccionFiscal, correo, telefono } =
+        this.datosFactura;
+
+      if (![ruc, razonSocial, direccionFiscal, correo, telefono].every(Boolean)) {
+        this.validationMessage =
+          'Completa los datos de facturacion para emitir la factura.';
+        return;
       }
-    );
+    }
+
+    const order = this.orderStore.createOrder({
+      items: this.items,
+      subtotal: this.subtotal,
+      tax: this.tax,
+      total: this.total,
+      type: 'delivery',
+      source: 'delivery',
+      customer: {
+        name: this.customerName.trim(),
+        phone: this.telefono.trim(),
+        email: this.correo.trim() || undefined
+      },
+      delivery: {
+        address: this.direccionSeleccionada.trim(),
+        notes: this.referencias.trim() || undefined
+      },
+      billing: {
+        type: this.comprobanteSeleccionado,
+        ruc: this.datosFactura.ruc,
+        businessName: this.datosFactura.razonSocial,
+        fiscalAddress: this.datosFactura.direccionFiscal,
+        email: this.datosFactura.correo,
+        phone: this.datosFactura.telefono
+      }
+    });
+
+    if (environment.whatsapp.phone.trim()) {
+      this.orderStore.openWhatsApp(this.orderStore.buildBusinessWhatsAppUrl(order));
+    }
+
+    this.orderPlaced.emit(order);
+    this.resetForm();
+  }
+
+  cerrar() {
+    this.resetForm();
+    this.closeModal.emit();
+  }
+
+  updateDatosFactura() {
+    this.orderService.setDatosFactura(this.datosFactura);
+  }
+
+  private initMap() {
+    const defaultLocation = { lat: -0.1807, lng: -78.4678 };
+    const mapElement = document.getElementById('map');
+
+    if (!mapElement) {
+      return;
+    }
+
+    this.map = new google.maps.Map(mapElement, {
+      center: defaultLocation,
+      zoom: 15
+    });
 
     this.marker = new google.maps.Marker({
       position: defaultLocation,
@@ -78,6 +176,7 @@ export class DeliveryModalComponent implements AfterViewInit, OnInit {
       draggable: true
     });
 
+    this.mapReady = true;
     this.obtenerDireccion(defaultLocation);
 
     this.marker.addListener('dragend', () => {
@@ -86,11 +185,12 @@ export class DeliveryModalComponent implements AfterViewInit, OnInit {
         lat: position.lat(),
         lng: position.lng()
       };
+
       this.obtenerDireccion(coords);
     });
   }
 
-  obtenerDireccion(coords: any) {
+  private obtenerDireccion(coords: { lat: number; lng: number }) {
     const geocoder = new google.maps.Geocoder();
 
     geocoder.geocode({ location: coords }, (results: any, status: any) => {
@@ -100,103 +200,7 @@ export class DeliveryModalComponent implements AfterViewInit, OnInit {
     });
   }
 
-  confirmarPedido() {
-
-    if (!this.direccionSeleccionada || !this.correo || !this.telefono) {
-      alert('Completa todos los campos');
-      return;
-    }
-
-    console.log('Pedido confirmado', {
-      productos: this.items,
-      total: this.total,
-      comprobante: this.comprobanteSeleccionado,
-      direccion: this.direccionSeleccionada,
-      correo: this.correo,
-      telefono: this.telefono
-    });
-
-    const telefonoNegocio = '593999999999'; // 🔥 TU NÚMERO
-
-      const ticket = this.generarTicket();
-      const fecha = new Date().toLocaleString();
-
-      let mensaje = `🎟 *Ticket:* ${ticket}%0A`;
-      mensaje += `🕒 ${fecha}%0A%0A`;
-
-      mensaje += '🍽️ *Pedido*%0A%0A';
-
-      // 🛒 Productos
-      this.items.forEach(item => {
-        mensaje += `• ${item.product.name} x${item.quantity} - $${item.product.price * item.quantity}%0A`;
-      });
-
-      mensaje += `%0A💰 *Total:* $${this.total}%0A%0A`;
-
-      // 🧾 Comprobante
-      const comprobante = this.orderService.getComprobante();
-
-      if (comprobante) {
-        mensaje += `🧾 Comprobante: ${comprobante}%0A`;
-      }
-
-      // 🏢 Factura
-      const datosFactura = this.orderService.getDatosFactura();
-
-      if (comprobante === 'factura' && datosFactura) {
-        mensaje += `%0A📋 *Datos de Factura*%0A`;
-        mensaje += `RUC: ${datosFactura.ruc}%0A`;
-        mensaje += `Razón Social: ${datosFactura.razonSocial}%0A`;
-        mensaje += `Dirección Fiscal: ${datosFactura.direccionFiscal}%0A`;
-        mensaje += `Correo: ${datosFactura.correo}%0A`;
-        mensaje += `Teléfono: ${datosFactura.telefono}%0A`;
-      }
-
-      // 📍 DELIVERY
-      mensaje += `%0A📍 *Entrega*%0A`;
-      mensaje += `Dirección: ${this.direccionSeleccionada}%0A`;
-      mensaje += `Correo: ${this.correo}%0A`;
-      mensaje += `Teléfono: ${this.telefono}%0A%0A`;
-
-      mensaje += `🙏 Gracias por su pedido`;
-
-      const url = `https://wa.me/${telefonoNegocio}?text=${mensaje}`;
-
-      window.open(url, '_blank');
-
-      // 🔥 Limpieza total
-      this.orderService.clearCart();
-      this.orderService.clearDatosFactura();
-
-      this.resetForm();
-      this.closeModal.emit();
-  }
-
-  cerrar() {
-    this.resetForm();
-    this.closeModal.emit();
-  }
-
-  
   private resetForm() {
-    this.direccionSeleccionada = '';
-    this.correo = '';
-    this.telefono = '';
-  }
-
-  updateDatosFactura() {
-    this.orderService.setDatosFactura(this.datosFactura);
-  }
-
-  generarTicket(): string {
-    const fecha = new Date();
-
-    const año = fecha.getFullYear().toString().slice(-2);
-    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
-    const dia = fecha.getDate().toString().padStart(2, '0');
-
-    const random = Math.floor(Math.random() * 900 + 100);
-
-    return `TK-${año}${mes}${dia}-${random}`;
+    this.validationMessage = '';
   }
 }

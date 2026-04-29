@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "serve:crm": "npm run build && npm run serve:ssr:en-boca-de-todos",
     "serve:ssr:en-boca-de-todos": "node dist/en-boca-de-todos/server/server.mjs"
   },
   "private": true,

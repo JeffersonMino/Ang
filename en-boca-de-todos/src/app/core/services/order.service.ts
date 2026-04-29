@@ -2,13 +2,26 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Product } from '../../models/product.model';
 
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
+export interface InvoiceData {
+  ruc: string;
+  razonSocial: string;
+  direccionFiscal: string;
+  correo: string;
+  telefono: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
   private comprobante: 'factura' | 'nota' | null = null;
-  private items: { product: Product; quantity: number }[] = [];
-  private datosFactura: any = {
+  private items: CartItem[] = [];
+  private datosFactura: InvoiceData = {
     ruc: '',
     razonSocial: '',
     direccionFiscal: '',
@@ -19,7 +32,6 @@ export class OrderService {
   items$ = this.itemsSubject.asObservable();
 
   addProduct(product: Product) {
-
     const existing = this.items.find(i => i.product.id === product.id);
 
     if (existing) {
@@ -28,12 +40,28 @@ export class OrderService {
       this.items.push({ product, quantity: 1 });
     }
 
-    this.itemsSubject.next(this.items);
+    this.emitItems();
+  }
+
+  decreaseProduct(productId: string) {
+    const existing = this.items.find((item) => item.product.id === productId);
+
+    if (!existing) {
+      return;
+    }
+
+    if (existing.quantity === 1) {
+      this.removeProduct(productId);
+      return;
+    }
+
+    existing.quantity--;
+    this.emitItems();
   }
 
   removeProduct(productId: string) {
-    this.items = this.items.filter(i => i.product.id !== productId);
-    this.itemsSubject.next(this.items);
+    this.items = this.items.filter((i) => i.product.id !== productId);
+    this.emitItems();
   }
 
   getSubtotal(): number {
@@ -45,9 +73,8 @@ export class OrderService {
 
   clearCart() {
     this.items = [];
-    this.itemsSubject.next(this.items);
+    this.emitItems();
   }
-
 
   setComprobante(tipo: 'factura' | 'nota' | null) {
     this.comprobante = tipo;
@@ -57,11 +84,11 @@ export class OrderService {
     return this.comprobante;
   }
 
-  setDatosFactura(datos: any) {
+  setDatosFactura(datos: Partial<InvoiceData>) {
     this.datosFactura = { ...this.datosFactura, ...datos };
   }
 
-  getDatosFactura() {
+  getDatosFactura(): InvoiceData {
     return this.datosFactura ?? {
       ruc: '',
       razonSocial: '',
@@ -80,5 +107,8 @@ export class OrderService {
       telefono: ''
     };
   }
- 
+
+  private emitItems() {
+    this.itemsSubject.next([...this.items]);
+  }
 }

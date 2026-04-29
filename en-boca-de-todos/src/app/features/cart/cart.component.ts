@@ -1,11 +1,19 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
-
-import { OrderService } from '../../core/services/order.service';
-import { DeliveryModalComponent } from '../checkout/delivery-modal/delivery-modal.component';
+import { environment } from '../../../environments/environment';
+import {
+  InvoiceData,
+  OrderService
+} from '../../core/services/order.service';
+import { OrderStoreService } from '../../core/services/order-store.service';
+import { BillingInfo, Order } from '../../models/order.model';
 import { Product } from '../../models/product.model';
+import { DeliveryModalComponent } from '../checkout/delivery-modal/delivery-modal.component';
+
+type FeedbackTone = 'success' | 'warning';
 
 @Component({
   selector: 'app-cart',
@@ -15,51 +23,72 @@ import { Product } from '../../models/product.model';
   styleUrls: ['./cart.component.scss']
 })
 export class CartComponent {
-
-  items$!: Observable<{ product: Product; quantity: number }[]>;
-
+  private readonly destroyRef = inject(DestroyRef);
+  items$: Observable<{ product: Product; quantity: number }[]>;
   comprobante: 'factura' | 'nota' | null = null;
-  
-  datosFactura: any = {
+  datosFactura: InvoiceData = {
     ruc: '',
     razonSocial: '',
     direccionFiscal: '',
     correo: '',
     telefono: ''
   };
-  
-  procesando = false;
+  customer = {
+    name: '',
+    phone: '',
+    email: '',
+    notes: ''
+  };
+  feedbackMessage = '';
+  feedbackTone: FeedbackTone = 'success';
   pedidoConfirmado = false;
   cart: { product: Product; quantity: number }[] = [];
-
   subtotal = 0;
   tax = 0;
   total = 0;
-
   showDeliveryModal = false;
+  private feedbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private orderService: OrderService) {
-
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly orderStore: OrderStoreService
+  ) {
     this.items$ = this.orderService.items$;
 
-    this.items$.subscribe(items => {
-      this.cart = items;
-      this.subtotal = this.orderService.getSubtotal();
-      this.tax = this.subtotal * 0.15;
-      this.total = this.subtotal + this.tax;
-    });
+    this.items$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((items) => {
+        this.cart = items;
+        this.subtotal = this.orderService.getSubtotal();
+        this.tax = this.subtotal * environment.billing.iva;
+        this.total = this.subtotal + this.tax;
+      });
 
     const datos = this.orderService.getDatosFactura();
     if (datos) {
       this.datosFactura = datos;
     }
+
+    this.comprobante = this.orderService.getComprobante();
   }
 
-  remove(id: string) {
-    this.orderService.removeProduct(id);
+  increase(product: Product) {
+    this.orderService.addProduct(product);
+  }
+
+  decrease(productId: string) {
+    this.orderService.decreaseProduct(productId);
+  }
+
+  remove(productId: string) {
+    this.orderService.removeProduct(productId);
   }
 
   openDeliveryModal() {
+    if (!this.validateCustomerBase()) {
+      return;
+    }
+
     this.showDeliveryModal = true;
   }
 
@@ -73,98 +102,135 @@ export class CartComponent {
 
     if (tipo !== 'factura') {
       this.orderService.clearDatosFactura();
+      this.datosFactura = this.orderService.getDatosFactura();
     }
-  }
-
-  confirmarDelivery(data: any) {
-       
-    this.procesando = true;
-
-    setTimeout(() => {
-      this.procesando = false;
-      this.pedidoConfirmado = true;
-
-      this.orderService.clearCart();
-      this.showDeliveryModal = false;
-
-      setTimeout(() => {
-        this.pedidoConfirmado = false;
-      }, 3000);
-
-    }, 2000);
-
-     // Vaciar carrito al confirmar
-    this.orderService.clearCart();
-
-    this.showDeliveryModal = false;
-
-
   }
 
   updateDatosFactura() {
     this.orderService.setDatosFactura(this.datosFactura);
   }
 
+  enviarWhatsApp() {
+    if (this.carritoVacio || !this.validateCustomerBase()) {
+      return;
+    }
+
+    const order = this.orderStore.createOrder({
+      items: this.cart,
+      subtotal: this.subtotal,
+      tax: this.tax,
+      total: this.total,
+      type: 'pickup',
+      source: 'whatsapp',
+      customer: this.getCustomerInfo(),
+      billing: this.getBillingInfo()
+    });
+
+    const whatsappUrl = this.orderStore.buildBusinessWhatsAppUrl(order);
+
+    if (environment.whatsapp.phone.trim()) {
+      this.orderStore.openWhatsApp(whatsappUrl);
+      this.showFeedback(
+        `Pedido ${order.sequential} enviado por WhatsApp y registrado en el panel admin.`,
+        'success'
+      );
+    } else {
+      this.showFeedback(
+        `Pedido ${order.sequential} registrado. Solo falta configurar el telefono de WhatsApp del negocio en environment.`,
+        'warning'
+      );
+    }
+
+    this.finishOrder();
+  }
+
+  onDeliveryOrderPlaced(order: Order) {
+    this.showDeliveryModal = false;
+    this.showFeedback(
+      `Pedido ${order.sequential} confirmado. Ya aparece en el panel admin para preparacion y despacho.`,
+      'success'
+    );
+    this.finishOrder();
+  }
+
   get carritoVacio(): boolean {
     return this.cart.length === 0;
   }
 
-   // aqui va el proceo para en envio de whatsapp, pero lo dejare para el final
-  enviarWhatsApp() {
+  private validateCustomerBase(): boolean {
+    if (!this.customer.name.trim() || !this.customer.phone.trim()) {
+      this.showFeedback(
+        'Completa nombre y telefono del cliente antes de confirmar el pedido.',
+        'warning'
+      );
+      return false;
+    }
 
-    if (this.carritoVacio) return;
+    if (this.comprobante === 'factura') {
+      const { ruc, razonSocial, direccionFiscal, correo, telefono } =
+        this.datosFactura;
 
-  const telefonoNegocio = '+5493772655931'; // 🔥 CAMBIA POR TU NÚMERO
+      if (![ruc, razonSocial, direccionFiscal, correo, telefono].every(Boolean)) {
+        this.showFeedback(
+          'Completa los datos de facturacion para emitir la factura.',
+          'warning'
+        );
+        return false;
+      }
+    }
 
-  const ticket = this.generarNumeroTicket();
-  const fecha = new Date().toLocaleString();
-
-  let mensaje = `🎟 *Ticket:* ${ticket}%0A`;
-  mensaje += `🕒 ${fecha}%0A%0A`;
-
-  mensaje += '🍽️ *Detalle del Pedido*%0A%0A';
-
-  this.cart.forEach(item => {
-    mensaje += `• ${item.product.name} x${item.quantity} - $${item.product.price * item.quantity}%0A`;
-  });
-
-  mensaje += `%0A`;
-  mensaje += `Subtotal: $${this.subtotal}%0A`;
-  mensaje += `IVA (15%): $${this.tax}%0A`;
-  mensaje += `*Total: $${this.total}*%0A%0A`;
-
-  // Comprobante
-  if (this.comprobante) {
-    mensaje += `🧾 Comprobante: ${this.comprobante}%0A`;
+    return true;
   }
 
-  // Datos factura
-  if (this.comprobante === 'factura' && this.datosFactura) {
-    mensaje += `%0A📋 *Datos de Factura*%0A`;
-    mensaje += `RUC: ${this.datosFactura.ruc}%0A`;
-    mensaje += `Razón Social: ${this.datosFactura.razonSocial}%0A`;
-    mensaje += `Dirección Fiscal: ${this.datosFactura.direccionFiscal}%0A`;
-    mensaje += `Correo: ${this.datosFactura.correo}%0A`;
-    mensaje += `Teléfono: ${this.datosFactura.telefono}%0A%0A`;
+  private getCustomerInfo() {
+    return {
+      name: this.customer.name.trim(),
+      phone: this.customer.phone.trim(),
+      email: this.customer.email.trim() || undefined
+    };
   }
 
-  mensaje += `🙏 Gracias por su pedido.`;
-
-  const url = `https://wa.me/${telefonoNegocio}?text=${mensaje}`;
-
-  window.open(url, '_blank');
+  private getBillingInfo(): BillingInfo {
+    return {
+      type: this.comprobante,
+      ruc: this.datosFactura.ruc,
+      businessName: this.datosFactura.razonSocial,
+      fiscalAddress: this.datosFactura.direccionFiscal,
+      email: this.datosFactura.correo,
+      phone: this.datosFactura.telefono
+    };
   }
 
-  generarNumeroTicket(): string {
-  const fecha = new Date();
+  private finishOrder() {
+    this.pedidoConfirmado = true;
+    this.orderService.clearCart();
+    this.orderService.clearDatosFactura();
+    this.orderService.setComprobante(null);
+    this.comprobante = null;
+    this.datosFactura = this.orderService.getDatosFactura();
+    this.customer = {
+      name: '',
+      phone: '',
+      email: '',
+      notes: ''
+    };
 
-  const año = fecha.getFullYear().toString().slice(-2);
-  const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
-  const dia = fecha.getDate().toString().padStart(2, '0');
+    setTimeout(() => {
+      this.pedidoConfirmado = false;
+    }, 3000);
+  }
 
-  const random = Math.floor(Math.random() * 900 + 100); // 3 dígitos
+  private showFeedback(message: string, tone: FeedbackTone) {
+    this.feedbackMessage = message;
+    this.feedbackTone = tone;
 
-  return `TK-${año}${mes}${dia}-${random}`;
-}
+    if (this.feedbackTimeoutId) {
+      clearTimeout(this.feedbackTimeoutId);
+    }
 
+    this.feedbackTimeoutId = setTimeout(() => {
+      this.feedbackMessage = '';
+      this.feedbackTimeoutId = null;
+    }, 4500);
+  }
 }

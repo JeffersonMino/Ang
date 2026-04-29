@@ -11,10 +11,12 @@ import { OrderService } from '../../../core/services/order.service';
   styleUrls: ['./product-card.component.scss']
 })
 export class ProductCardComponent {
+  @Input({ required: true }) product!: Product;
 
- @Input() product!: Product;
-
-  added = false;
+added = false;
+imageError = false;
+readonly fallbackDescription =
+  'Preparado al momento para una entrega mas consistente.';
 
   constructor(private orderService: OrderService) {}
 
@@ -23,6 +25,10 @@ export class ProductCardComponent {
 
     this.added = true;
     setTimeout(() => this.added = false, 500);
+  }
+
+  onImageError() {
+    this.imageError = true;
   }
 }
 

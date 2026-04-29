@@ -1,101 +1,118 @@
 <div class="modal-overlay">
-
   <div class="modal-container">
-
-    <!-- HEADER -->
     <div class="modal-header">
-      <h2>Pedido a Domicilio</h2>
-      <button class="close-btn" (click)="cerrar()">✖</button>
+      <div>
+        <p class="eyebrow">Pedido a domicilio</p>
+        <h2>Confirma la entrega</h2>
+      </div>
+      <button type="button" class="close-btn" (click)="cerrar()">x</button>
     </div>
 
-    <!-- CONTENIDO -->
     <div class="modal-body">
+      <section class="map-panel">
+        <div id="map" class="map"></div>
+        <p class="map-hint">
+          {{ mapReady ? 'Arrastra el pin para ajustar la entrega.' : 'Puedes escribir la direccion manualmente si el mapa tarda en cargar.' }}
+        </p>
+      </section>
 
-      <!-- MAPA -->
-      <div id="map" class="map"></div>
+      <section class="form-panel">
+        <p *ngIf="validationMessage" class="validation">{{ validationMessage }}</p>
 
-      <!-- FORMULARIO -->
-      <div class="form-section">
+        <div class="field-grid">
+          <input
+            type="text"
+            placeholder="Nombre del cliente"
+            [(ngModel)]="customerName" />
 
-        <label>Dirección seleccionada</label>
-        <input
-          type="text"
-          [(ngModel)]="direccionSeleccionada"
-          readonly
-        />
+          <input
+            type="text"
+            placeholder="Telefono"
+            [(ngModel)]="telefono" />
 
-        <label>Correo electrónico</label>
-        <input
-          type="email"
-          [(ngModel)]="correo"
-          placeholder="ejemplo@email.com"
-        />
+          <input
+            type="email"
+            placeholder="Correo (opcional)"
+            [(ngModel)]="correo" />
+        </div>
 
-        <label>Teléfono</label>
-        <input
-          type="text"
-          [(ngModel)]="telefono"
-          placeholder="0999999999"
-        />
+        <textarea
+          rows="2"
+          placeholder="Direccion de entrega"
+          [(ngModel)]="direccionSeleccionada"></textarea>
 
-      </div>
+        <textarea
+          rows="2"
+          placeholder="Referencia adicional"
+          [(ngModel)]="referencias"></textarea>
 
-      <!-- RESUMEN DEL PEDIDO -->
-      <div class="order-summary">
-        <h3>Resumen del pedido</h3>
+        <div *ngIf="comprobanteSeleccionado" class="billing-box">
+          <strong>Comprobante:</strong> {{ comprobanteSeleccionado }}
+
+          <div *ngIf="comprobanteSeleccionado === 'factura'" class="factura-info">
+            <input
+              type="text"
+              placeholder="RUC"
+              [(ngModel)]="datosFactura.ruc"
+              (ngModelChange)="updateDatosFactura()" />
+
+            <input
+              type="text"
+              placeholder="Razon social"
+              [(ngModel)]="datosFactura.razonSocial"
+              (ngModelChange)="updateDatosFactura()" />
+
+            <input
+              type="text"
+              placeholder="Direccion fiscal"
+              [(ngModel)]="datosFactura.direccionFiscal"
+              (ngModelChange)="updateDatosFactura()" />
+
+            <input
+              type="email"
+              placeholder="Correo de facturacion"
+              [(ngModel)]="datosFactura.correo"
+              (ngModelChange)="updateDatosFactura()" />
+
+            <input
+              type="text"
+              placeholder="Telefono de facturacion"
+              [(ngModel)]="datosFactura.telefono"
+              (ngModelChange)="updateDatosFactura()" />
+          </div>
+        </div>
+      </section>
+
+      <aside class="order-summary">
+        <h3>Resumen</h3>
 
         <div *ngFor="let item of items" class="order-item">
           <span>{{ item.product.name }} x{{ item.quantity }}</span>
-          <span>${{ item.product.price * item.quantity }}</span>
+          <span>${{ (item.product.price * item.quantity).toFixed(2) }}</span>
         </div>
 
-        <div class="total">
-          <strong>Total:</strong>
-          <strong>${{ total }}</strong>
+        <div class="totals">
+          <div>
+            <span>Subtotal</span>
+            <strong>${{ subtotal.toFixed(2) }}</strong>
+          </div>
+          <div>
+            <span>IVA</span>
+            <strong>${{ tax.toFixed(2) }}</strong>
+          </div>
+          <div class="grand-total">
+            <span>Total</span>
+            <strong>${{ total.toFixed(2) }}</strong>
+          </div>
         </div>
-      </div>
-      <div *ngIf="comprobanteSeleccionado">
-        <strong>Comprobante:</strong> {{ comprobanteSeleccionado }}
-        <div *ngIf="comprobanteSeleccionado === 'factura'" class="factura-info">
-
-          <h3>Datos de Facturación</h3>
-
-          <input type="text"
-                placeholder="RUC"
-                [(ngModel)]="datosFactura.ruc"
-                (ngModelChange)="updateDatosFactura()" />
-
-          <input type="text"
-                placeholder="Razón Social"
-                [(ngModel)]="datosFactura.razonSocial"
-                (ngModelChange)="updateDatosFactura()" />
-
-          <input type="text"
-                placeholder="Dirección Fiscal"
-                [(ngModel)]="datosFactura.direccionFiscal"
-                (ngModelChange)="updateDatosFactura()" />
-
-          <input type="email"
-                placeholder="Correo"
-                [(ngModel)]="datosFactura.correo"
-                (ngModelChange)="updateDatosFactura()" />
-
-          <input type="text"
-                placeholder="Teléfono"
-                [(ngModel)]="datosFactura.telefono"
-                (ngModelChange)="updateDatosFactura()" />
-
-        </div>
-      </div>
+      </aside>
     </div>
 
-    <!-- FOOTER -->
     <div class="modal-footer">
-      <button class="confirm-btn" (click)="confirmarPedido()">
-        Confirmar Pedido
+      <button type="button" class="secondary-btn" (click)="cerrar()">Cancelar</button>
+      <button type="button" class="confirm-btn" (click)="confirmarPedido()">
+        Confirmar pedido
       </button>
     </div>
-
   </div>
-
 </div>

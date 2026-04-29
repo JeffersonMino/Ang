@@ -12,6 +12,12 @@ export const environment = {
     emissionPoint: '001',
     sequentialStart: 1
   },
+  admin: {
+    ownerName: 'Administrador principal'
+  },
+  api: {
+    baseUrl: '/api'
+  },
   whatsapp: {
     phone: ''
   }

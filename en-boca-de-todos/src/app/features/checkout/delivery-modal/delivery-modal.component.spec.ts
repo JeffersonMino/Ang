@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 
 import { DeliveryModalComponent } from './delivery-modal.component';
 
@@ -8,7 +9,8 @@ describe('DeliveryModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DeliveryModalComponent]
+      imports: [DeliveryModalComponent],
+      providers: [provideHttpClient()]
     })
     .compileComponents();
 
