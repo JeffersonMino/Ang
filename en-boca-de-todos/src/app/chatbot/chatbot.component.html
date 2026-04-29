@@ -3,14 +3,14 @@
   class="chat-launcher"
   [class.open]="isOpen"
   (click)="toggleChat()"
-  aria-label="Abrir asistente CRM">
-  CRM
+  aria-label="Abrir asistente de chat">
+  Chat
 </button>
 
 <section class="chat-panel" *ngIf="isOpen">
   <header class="chat-header">
     <div>
-      <strong>Asistente CRM</strong>
+      <strong>Asistente de chat</strong>
       <span>Ventas, pedidos y seguimiento</span>
     </div>
     <button type="button" (click)="toggleChat()" aria-label="Cerrar chat">x</button>
