@@ -9,8 +9,10 @@ import {
   OrderService
 } from '../../core/services/order.service';
 import { OrderStoreService } from '../../core/services/order-store.service';
-import { BillingInfo, Order } from '../../models/order.model';
+import { SiteContentService } from '../../core/services/site-content.service';
+import { BillingInfo, DeliveryInfo, Order } from '../../models/order.model';
 import { Product } from '../../models/product.model';
+import { LocationOption } from '../../models/site-content.model';
 import { DeliveryModalComponent } from '../checkout/delivery-modal/delivery-modal.component';
 
 type FeedbackTone = 'success' | 'warning';
@@ -47,11 +49,13 @@ export class CartComponent {
   tax = 0;
   total = 0;
   showDeliveryModal = false;
+  selectedLocation: LocationOption | null = null;
   private feedbackTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly orderService: OrderService,
-    private readonly orderStore: OrderStoreService
+    private readonly orderStore: OrderStoreService,
+    private readonly siteContent: SiteContentService
   ) {
     this.items$ = this.orderService.items$;
 
@@ -70,6 +74,12 @@ export class CartComponent {
     }
 
     this.comprobante = this.orderService.getComprobante();
+
+    this.siteContent.selectedLocation$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((location) => {
+        this.selectedLocation = location;
+      });
   }
 
   increase(product: Product) {
@@ -86,6 +96,15 @@ export class CartComponent {
 
   openDeliveryModal() {
     if (!this.validateCustomerBase()) {
+      return;
+    }
+
+    if (!this.selectedLocation) {
+      this.showFeedback(
+        'Selecciona tu direccion en el mapa al final de la pagina antes de pedir delivery.',
+        'warning'
+      );
+      this.scrollToDeliveryMap();
       return;
     }
 
@@ -123,6 +142,7 @@ export class CartComponent {
       type: 'pickup',
       source: 'whatsapp',
       customer: this.getCustomerInfo(),
+      delivery: this.getOrderLocationSnapshot('pickup'),
       billing: this.getBillingInfo()
     });
 
@@ -155,6 +175,24 @@ export class CartComponent {
 
   get carritoVacio(): boolean {
     return this.cart.length === 0;
+  }
+
+  get selectedAddress(): string {
+    return this.selectedLocation?.address ?? '';
+  }
+
+  get selectedReference(): string {
+    if (!this.selectedLocation) {
+      return this.customer.notes;
+    }
+
+    return [
+      this.selectedLocation.name,
+      this.selectedLocation.details,
+      this.customer.notes
+    ]
+      .filter(Boolean)
+      .join(' | ');
   }
 
   private validateCustomerBase(): boolean {
@@ -201,6 +239,19 @@ export class CartComponent {
     };
   }
 
+  private getOrderLocationSnapshot(mode: 'pickup' | 'delivery'): DeliveryInfo | undefined {
+    if (!this.selectedLocation && !this.customer.notes.trim()) {
+      return undefined;
+    }
+
+    return {
+      address:
+        this.selectedLocation?.address ??
+        (mode === 'pickup' ? 'Retiro/local' : 'Direccion por confirmar'),
+      notes: this.selectedReference || undefined
+    };
+  }
+
   private finishOrder() {
     this.pedidoConfirmado = true;
     this.orderService.clearCart();
@@ -232,5 +283,16 @@ export class CartComponent {
       this.feedbackMessage = '';
       this.feedbackTimeoutId = null;
     }, 4500);
+  }
+
+  private scrollToDeliveryMap() {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    document.getElementById('mapa-entrega')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
   }
 }

@@ -1,50 +1,137 @@
 <section class="landing-shell">
-  <header class="topbar">
-    <div class="brand">
-      <h1 class="brand-title">En Boca de Todos</h1>
-    </div>
+  <header class="topbar" aria-label="Navegacion principal">
+    <button type="button" class="brand-pill" (click)="scrollTo('inicio')">
+      <img alt="En Boca de Todos" src="/Fondo1.png">
+      <span>En Boca de Todos</span>
+    </button>
 
     <nav>
-      <button type="button" class="ghost-link" (click)="goToMenu()">Menu</button>
-      <a routerLink="/admin/login" class="solid-link">Admin</a>
+      <button type="button" (click)="scrollTo('publicidad')">Promos</button>
+      <button type="button" (click)="scrollTo('videos')">Videos</button>
+      <button type="button" (click)="goToMenu()">Menu</button>
+      <button type="button" (click)="scrollTo('mapa-entrega')">Mapa</button>
+      <a routerLink="/admin/login">Admin</a>
     </nav>
   </header>
 
-  <section class="hero">
-    <div class="hero-copy">
-      <p class="hero-kicker">Quito - delivery y retiro</p>
-      <h1 class="hero-title">
-        El sabor de dos paises fusionados en una sola experiencia
-      </h1>
+  <!-- XML: HeroPrincipal inicio. Imagen de marca + contador operativo compacto. -->
+  <main id="inicio" class="hero-stage">
+    <section class="hero-copy">
+      <p class="eyebrow">Quito - delivery y retiro</p>
+      <h1>Una experiencia visual, rapida y sabrosa para pedir sin friccion.</h1>
+      <p>
+        El cliente ve promociones, selecciona productos, marca su direccion en el mapa y recibe
+        seguimiento por WhatsApp desde el admin.
+      </p>
 
       <div class="hero-actions">
-        <button type="button" class="primary-cta" (click)="goToMenu()">
-          Ordenar ahora
+        <button type="button" class="primary-cta" (click)="goToMenu()">Ordenar ahora</button>
+        <button type="button" class="secondary-cta" (click)="scrollTo('mapa-entrega')">
+          Seleccionar direccion
         </button>
-        <a routerLink="/admin/login" class="secondary-cta">Ver panel admin</a>
+      </div>
+    </section>
+
+    <section class="brand-stage" aria-label="Imagen principal del negocio">
+      <div class="logo-orbit">
+        <img alt="Logo En Boca de Todos" src="/Fondo1.png">
+      </div>
+      <div class="brand-caption">
+        <span>Sabor que cruza fronteras</span>
+        <strong>Ecuador + Argentina</strong>
+      </div>
+
+      <!-- XML: ContadorPedidos bajo la imagen de empresa para no saturar el texto principal. -->
+      <div class="quick-stats" aria-label="Resumen operativo">
+        <article>
+          <span>Pedidos</span>
+          <strong>{{ recentOrders.length || 0 }}</strong>
+        </article>
+        <article>
+          <span>Alertas</span>
+          <strong>{{ customerNotifications.length || 0 }}</strong>
+        </article>
+        <article>
+          <span>Menu</span>
+          <strong>{{ products.length }}</strong>
+        </article>
+      </div>
+    </section>
+  </main>
+  <!-- XML: HeroPrincipal fin. -->
+
+  <!-- XML: PublicidadCompacta inicio. Se mantiene reducida para no ocupar demasiada pantalla. -->
+  <section id="publicidad" class="content-section promo-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Publicidad editable</p>
+        <h2>Promociones destacadas</h2>
+      </div>
+      <button type="button" class="section-link" (click)="goToMenu()">Ver productos</button>
+    </div>
+
+    <div class="promo-grid">
+      <article
+        class="promo-card"
+        *ngFor="let promotion of activePromotions()"
+        [class.gold]="promotion.accent === 'gold'"
+        [class.blue]="promotion.accent === 'blue'"
+        [class.red]="promotion.accent === 'red'">
+        <img [src]="promotion.imageUrl || '/Fondo1.png'" [alt]="promotion.title">
+        <div>
+          <span>{{ promotion.subtitle }}</span>
+          <h3>{{ promotion.title }}</h3>
+          <p>{{ promotion.body }}</p>
+          <button type="button" (click)="goToMenu()">{{ promotion.ctaLabel }}</button>
+        </div>
+      </article>
+    </div>
+  </section>
+  <!-- XML: PublicidadCompacta fin. -->
+
+  <section id="videos" class="content-section video-section">
+    <!-- XML: SeccionVideos inicio. Los videos se cargan desde Admin > Contenido publico > Nuevo video. -->
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Videos y reels</p>
+        <h2>Contenido visual del negocio</h2>
       </div>
     </div>
 
-    <div class="hero-panel">
-      <article>
-        <span>Pedidos centralizados</span>
-        <strong>{{ recentOrders.length || 0 }}</strong>
-      </article>
-      <article>
-        <span>Notificaciones</span>
-        <strong>{{ customerNotifications.length || 0 }}</strong>
-      </article>
-      <article class="brand-showcase">
-        <img alt="Logo En Boca de Todos" src="/Fondo1.png" class="brand-logo">
-        <h2 class="brand-title">En Boca de Todos</h2>
+    <div class="video-grid">
+      <!-- XML: VideoItem repite cada video activo guardado en SiteContentService. -->
+      <article class="video-card" *ngFor="let video of activeVideos()">
+        <!-- XML: Si video.videoUrl tiene URL de YouTube, Angular muestra iframe seguro. -->
+        <ng-container *ngIf="safeVideoUrl(video) as videoUrl; else videoPlaceholder">
+          <iframe
+            [src]="videoUrl"
+            [title]="video.title"
+            loading="lazy"
+            allowfullscreen>
+          </iframe>
+        </ng-container>
+
+        <!-- XML: Placeholder visible mientras no cargues URL de video desde el administrador. -->
+        <ng-template #videoPlaceholder>
+          <div class="video-placeholder">
+            <img [src]="video.thumbnailUrl || '/Fondo1.png'" [alt]="video.title">
+            <span>Agrega una URL de YouTube desde el admin</span>
+          </div>
+        </ng-template>
+
+        <div class="video-copy">
+          <h3>{{ video.title }}</h3>
+          <p>{{ video.description }}</p>
+        </div>
       </article>
     </div>
+    <!-- XML: SeccionVideos fin. -->
   </section>
 
   <section class="status-section" *ngIf="recentOrders.length || customerNotifications.length">
     <div class="section-heading">
       <div>
-        <p class="hero-kicker">Seguimiento</p>
+        <p class="eyebrow">Seguimiento</p>
         <h2>Estado de pedidos recientes</h2>
       </div>
     </div>
@@ -78,47 +165,89 @@
     </div>
   </section>
 
-  <section id="menu-section" class="menu-section">
+  <section id="menu-section" class="content-section menu-section">
     <div class="section-heading">
       <div>
-        <h2>Menu</h2>
+        <p class="eyebrow">Pedido guiado</p>
+        <h2>Menu por categorias</h2>
       </div>
+      <span class="selected-chip" *ngIf="selectedLocation">
+        Direccion lista para checkout
+      </span>
     </div>
 
-    <div class="category-strip">
-      <button
-        type="button"
-        *ngFor="let cat of categories"
-        [class.active]="activeCategory === cat"
-        (click)="focusCategory(cat)">
-        {{ cat }}
-      </button>
-    </div>
-
+    <!-- XML: MenuAbanico inicio. Acordeon plegable/desplegable por categoria para ahorrar espacio. -->
     <div class="menu-layout">
       <div class="menu-content">
-        <section
-          class="category-block"
-          *ngFor="let cat of categories"
-          [id]="cat">
-          <div class="category-head">
+        <article
+          class="category-panel"
+          *ngFor="let cat of categories; let index = index"
+          [id]="cat"
+          [class.expanded]="isCategoryExpanded(cat)">
+          <button
+            type="button"
+            class="category-trigger"
+            [attr.aria-expanded]="isCategoryExpanded(cat)"
+            (click)="toggleCategory(cat)">
+            <span class="fan-index">{{ index + 1 }}</span>
             <div>
-              <p class="hero-kicker">Categoria</p>
+              <p class="eyebrow">Categoria</p>
               <h3>{{ cat }}</h3>
             </div>
-            <span>{{ groupedProducts[cat].length }} productos</span>
-          </div>
+            <span>{{ getCategoryCount(cat) }} productos</span>
+            <strong class="accordion-icon">{{ isCategoryExpanded(cat) ? '-' : '+' }}</strong>
+          </button>
 
-          <div class="product-grid">
+          <div class="category-content" *ngIf="isCategoryExpanded(cat)">
             <app-product-card
               *ngFor="let product of groupedProducts[cat]"
               [product]="product">
             </app-product-card>
           </div>
-        </section>
+        </article>
       </div>
 
       <app-cart></app-cart>
+    </div>
+    <!-- XML: MenuAbanico fin. -->
+  </section>
+
+  <section id="mapa-entrega" class="content-section map-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Direccion final</p>
+        <h2>Selecciona tu punto de entrega en el mapa</h2>
+      </div>
+      <span class="selected-chip" *ngIf="selectedLocation">
+        {{ selectedLocation.name }}
+      </span>
+    </div>
+
+    <div class="map-layout">
+      <div class="map-card">
+        <div id="landing-map" class="landing-map" aria-label="Mapa para seleccionar direccion"></div>
+        <p class="map-status">{{ mapStatus }}</p>
+      </div>
+
+      <aside class="map-summary">
+        <span class="map-step">Paso final</span>
+        <h3>Tu pedido usara esta direccion</h3>
+        <p *ngIf="selectedMapAddress; else noMapAddress">
+          {{ selectedMapAddress }}
+        </p>
+        <ng-template #noMapAddress>
+          <p>Haz clic en el mapa o usa tu ubicacion actual antes de confirmar delivery.</p>
+        </ng-template>
+
+        <div class="map-actions">
+          <button type="button" class="primary-cta" (click)="useCurrentLocation()">
+            Usar mi ubicacion actual
+          </button>
+          <button type="button" class="secondary-cta" (click)="goToMenu()">
+            Volver al pedido
+          </button>
+        </div>
+      </aside>
     </div>
   </section>
 

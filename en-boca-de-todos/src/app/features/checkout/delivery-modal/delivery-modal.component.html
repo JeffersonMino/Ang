@@ -41,6 +41,10 @@
           placeholder="Direccion de entrega"
           [(ngModel)]="direccionSeleccionada"></textarea>
 
+        <small class="address-hint" *ngIf="preferredAddress">
+          Esta direccion viene de la ubicacion seleccionada. Puedes ajustarla antes de confirmar.
+        </small>
+
         <textarea
           rows="2"
           placeholder="Referencia adicional"

@@ -2,7 +2,7 @@
   "version": 1,
   "meta": {
     "createdAt": "2026-04-29T00:00:00.000Z",
-    "updatedAt": "2026-04-29T20:26:46.819Z",
+    "updatedAt": "2026-06-04T12:47:11.762Z",
     "restaurantName": "EN BOCA DE TODOS",
     "country": "Ecuador",
     "currency": "USD"
@@ -25,11 +25,18 @@
   "adminChallenges": [],
   "adminSessions": [
     {
-      "id": "adm-session-3ffc2aa0-1246-4c81-9446-7bd5c228e79f",
+      "id": "adm-session-0bbf006f-308e-4619-959b-7f936269cb92",
       "adminId": "admin-primary",
-      "token": "adm-token-e07b41dc-7244-41e1-915e-936a73210f53",
-      "createdAt": "2026-04-29T20:24:42.883Z",
-      "expiresAt": "2026-04-30T04:24:42.883Z"
+      "token": "adm-token-64814d8c-20de-41d1-873b-cd57cf0ef49b",
+      "createdAt": "2026-06-04T12:47:11.762Z",
+      "expiresAt": "2026-06-04T20:47:11.762Z"
+    },
+    {
+      "id": "adm-session-8ba974e7-af03-419e-9afc-4600230d55e2",
+      "adminId": "admin-primary",
+      "token": "adm-token-59a1158b-75b5-46e2-86b5-0e3e6380bc99",
+      "createdAt": "2026-06-04T12:09:14.621Z",
+      "expiresAt": "2026-06-04T20:09:14.621Z"
     }
   ],
   "orders": [
@@ -500,6 +507,46 @@
     }
   ],
   "auditLogs": [
+    {
+      "actorType": "admin",
+      "actorId": "admin-primary",
+      "action": "admin.login.confirmed",
+      "entity": "admin_session",
+      "entityId": "adm-session-0bbf006f-308e-4619-959b-7f936269cb92",
+      "detail": "Sesion administrativa iniciada.",
+      "id": "audit-78d2e0f4-24d2-4192-8bac-738ed86b3f7b",
+      "createdAt": "2026-06-04T12:47:11.762Z"
+    },
+    {
+      "actorType": "admin",
+      "actorId": "admin-primary",
+      "action": "admin.login.challenge_created",
+      "entity": "admin",
+      "entityId": "admin-primary",
+      "detail": "Credenciales validadas, codigo de confirmacion requerido.",
+      "id": "audit-259816ba-6067-4a9b-b05d-5bceb10c3e53",
+      "createdAt": "2026-06-04T12:47:06.358Z"
+    },
+    {
+      "actorType": "admin",
+      "actorId": "admin-primary",
+      "action": "admin.login.confirmed",
+      "entity": "admin_session",
+      "entityId": "adm-session-8ba974e7-af03-419e-9afc-4600230d55e2",
+      "detail": "Sesion administrativa iniciada.",
+      "id": "audit-6bc75383-eb5e-43c6-9380-54560f5b147b",
+      "createdAt": "2026-06-04T12:09:14.621Z"
+    },
+    {
+      "actorType": "admin",
+      "actorId": "admin-primary",
+      "action": "admin.login.challenge_created",
+      "entity": "admin",
+      "entityId": "admin-primary",
+      "detail": "Credenciales validadas, codigo de confirmacion requerido.",
+      "id": "audit-e1bd504d-3cf6-4d29-9893-68612f498bc4",
+      "createdAt": "2026-06-04T12:09:09.157Z"
+    },
     {
       "actorType": "admin",
       "actorId": "admin-primary",

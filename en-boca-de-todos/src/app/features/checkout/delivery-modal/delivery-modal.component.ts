@@ -39,6 +39,8 @@ export class DeliveryModalComponent implements AfterViewInit, OnInit {
     email: '',
     notes: ''
   };
+  @Input() preferredAddress = '';
+  @Input() preferredReference = '';
 
   @Output() closeModal = new EventEmitter<void>();
   @Output() orderPlaced = new EventEmitter<Order>();
@@ -81,7 +83,8 @@ export class DeliveryModalComponent implements AfterViewInit, OnInit {
     this.customerName = this.customerDraft.name;
     this.correo = this.customerDraft.email;
     this.telefono = this.customerDraft.phone;
-    this.referencias = this.customerDraft.notes;
+    this.direccionSeleccionada = this.preferredAddress;
+    this.referencias = this.preferredReference || this.customerDraft.notes;
   }
 
   ngAfterViewInit(): void {
@@ -177,7 +180,10 @@ export class DeliveryModalComponent implements AfterViewInit, OnInit {
     });
 
     this.mapReady = true;
-    this.obtenerDireccion(defaultLocation);
+
+    if (!this.direccionSeleccionada.trim()) {
+      this.obtenerDireccion(defaultLocation);
+    }
 
     this.marker.addListener('dragend', () => {
       const position = this.marker.getPosition();

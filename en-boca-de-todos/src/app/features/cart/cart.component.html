@@ -70,6 +70,23 @@
       [(ngModel)]="customer.notes"></textarea>
   </section>
 
+  <section class="location-summary" *ngIf="!carritoVacio">
+    <div class="section-title">
+      <h4>Ubicacion seleccionada</h4>
+      <span>Se usara en retiro o delivery</span>
+    </div>
+
+    <ng-container *ngIf="selectedLocation; else noLocation">
+      <strong>{{ selectedLocation.name }}</strong>
+      <p>{{ selectedLocation.address }}</p>
+      <small>{{ selectedLocation.details }}</small>
+    </ng-container>
+
+    <ng-template #noLocation>
+      <p>Para delivery, selecciona tu punto en el mapa al final de la pagina.</p>
+    </ng-template>
+  </section>
+
   <section class="totals-card" *ngIf="!carritoVacio">
     <div>
       <span>Subtotal</span>
@@ -174,6 +191,8 @@
     [tax]="tax"
     [total]="total"
     [customerDraft]="customer"
+    [preferredAddress]="selectedAddress"
+    [preferredReference]="selectedReference"
     (closeModal)="closeDeliveryModal()"
     (orderPlaced)="onDeliveryOrderPlaced($event)">
   </app-delivery-modal>

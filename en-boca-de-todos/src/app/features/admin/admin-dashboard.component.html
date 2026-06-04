@@ -10,10 +10,28 @@
     </div>
 
     <div class="header-actions">
+      <!-- XML: AdminToolbar inicio. Acciones globales del panel administrativo. -->
+      <button type="button" class="ghost-btn" (click)="refreshDashboard()">
+        Actualizar datos
+      </button>
+      <button type="button" class="ghost-btn" (click)="exportOrdersExcel()">
+        Exportar Excel
+      </button>
+      <button type="button" class="ghost-btn" (click)="exportOrdersPdf()">
+        Exportar PDF
+      </button>
       <a routerLink="/" class="back-link">Volver al menu</a>
       <button type="button" class="ghost-btn" (click)="logout()">Cerrar sesion</button>
+      <!-- XML: AdminToolbar fin. -->
     </div>
   </header>
+
+  <p
+    *ngIf="dashboardMessage"
+    class="dashboard-message"
+    [class.warning]="dashboardMessageTone === 'warning'">
+    {{ dashboardMessage }}
+  </p>
 
   <div class="stats-grid">
     <article class="stat-card">
@@ -57,10 +75,17 @@
       <strong>${{ openPipelineValue.toFixed(2) }}</strong>
       <small>Valor abierto en oportunidades.</small>
     </article>
+
+    <article class="stat-card">
+      <span>Alertas sin leer</span>
+      <strong>{{ unreadNotifications }}</strong>
+      <small>Notificaciones que requieren revision.</small>
+    </article>
   </div>
 
   <div class="admin-grid">
     <section class="board">
+      <!-- XML: PedidosEntrantes inicio. Cada tarjeta muestra accion recomendada y acciones manuales. -->
       <div class="board-header">
         <h2>Pedidos entrantes</h2>
         <span>{{ incomingOrders.length }} activos</span>
@@ -94,6 +119,17 @@
           {{ order.delivery?.address }}
         </p>
 
+        <div class="recommended-action">
+          <span>Accion recomendada</span>
+          <button
+            type="button"
+            class="next-step-btn"
+            [disabled]="!canAdvance(order)"
+            (click)="advanceOrder(order)">
+            {{ getNextActionLabel(order) }}
+          </button>
+        </div>
+
         <div class="actions">
           <button
             type="button"
@@ -106,7 +142,7 @@
             type="button"
             *ngIf="order.status === 'confirmed'"
             (click)="setStatus(order, 'preparing')">
-            Preparar
+            Cocina
           </button>
 
           <button
@@ -114,21 +150,21 @@
             class="dispatch-btn"
             *ngIf="canDispatch(order)"
             (click)="setStatus(order, 'dispatched')">
-            Despachar y notificar
+            Despachar
           </button>
 
           <button
             type="button"
             *ngIf="canCompletePickup(order)"
             (click)="setStatus(order, 'delivered')">
-            Marcar entregado
+            Entregado
           </button>
 
           <button
             type="button"
             class="ghost-btn"
             (click)="sendOrderTracking(order)">
-            WhatsApp seguimiento
+            WhatsApp
           </button>
 
           <button
@@ -140,9 +176,11 @@
           </button>
         </div>
       </article>
+      <!-- XML: PedidosEntrantes fin. -->
     </section>
 
     <section class="board">
+      <!-- XML: PedidosSalientes inicio. Control de entregas y seguimiento post-despacho. -->
       <div class="board-header">
         <h2>Pedidos salientes</h2>
         <span>{{ outgoingOrders.length }} en ruta o cerrados</span>
@@ -169,13 +207,14 @@
             type="button"
             *ngIf="order.status === 'dispatched'"
             (click)="setStatus(order, 'delivered')">
-            Marcar entregado
+            Confirmar entrega
           </button>
           <button type="button" class="ghost-btn" (click)="sendOrderTracking(order)">
-            WhatsApp seguimiento
+            WhatsApp
           </button>
         </div>
       </article>
+      <!-- XML: PedidosSalientes fin. -->
     </section>
 
     <aside class="notifications-panel">
@@ -204,6 +243,130 @@
       </article>
     </aside>
   </div>
+
+  <section class="content-manager">
+    <div class="board-header">
+      <div>
+        <p class="eyebrow">Contenido publico</p>
+        <h2>Publicidad y videos de la landing</h2>
+      </div>
+      <span>{{ content.promotions.length }} promos / {{ content.videos.length }} videos</span>
+    </div>
+
+    <div class="content-grid">
+      <section class="board content-form">
+        <div class="board-header">
+          <h3>Nueva publicidad</h3>
+          <span>Landing</span>
+        </div>
+
+        <input
+          type="text"
+          placeholder="Titulo de la promocion"
+          [(ngModel)]="promotionForm.title">
+        <input
+          type="text"
+          placeholder="Subtitulo"
+          [(ngModel)]="promotionForm.subtitle">
+        <textarea
+          rows="3"
+          placeholder="Texto de venta"
+          [(ngModel)]="promotionForm.body"></textarea>
+        <input
+          type="text"
+          placeholder="URL de imagen"
+          [(ngModel)]="promotionForm.imageUrl">
+
+        <div class="form-row">
+          <select [(ngModel)]="promotionForm.accent">
+            <option value="gold">Dorado</option>
+            <option value="blue">Azul</option>
+            <option value="red">Rojo</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Texto del boton"
+            [(ngModel)]="promotionForm.ctaLabel">
+        </div>
+
+        <label class="check-row">
+          <input type="checkbox" [(ngModel)]="promotionForm.active">
+          Mostrar en landing
+        </label>
+
+        <button type="button" class="dispatch-btn" (click)="savePromotion()">
+          Publicar publicidad
+        </button>
+      </section>
+
+      <section class="board content-form">
+        <!-- XML: FormularioVideo inicio. Para publicar un video pega una URL de YouTube, youtu.be o embed. -->
+        <div class="board-header">
+          <div>
+            <h3>Nuevo video</h3>
+            <small>Pega una URL de YouTube. Ej: https://youtu.be/ID o enlace embed.</small>
+          </div>
+          <span>YouTube/Reel</span>
+        </div>
+
+        <input
+          type="text"
+          placeholder="Titulo del video"
+          [(ngModel)]="videoForm.title">
+        <textarea
+          rows="3"
+          placeholder="Descripcion"
+          [(ngModel)]="videoForm.description"></textarea>
+        <input
+          type="text"
+          placeholder="URL del video o embed"
+          [(ngModel)]="videoForm.videoUrl">
+        <input
+          type="text"
+          placeholder="Imagen de respaldo"
+          [(ngModel)]="videoForm.thumbnailUrl">
+
+        <label class="check-row">
+          <input type="checkbox" [(ngModel)]="videoForm.active">
+          Mostrar en landing
+        </label>
+
+        <button type="button" class="dispatch-btn" (click)="saveVideo()">
+          Publicar video
+        </button>
+        <!-- XML: FormularioVideo fin. El servicio convierte enlaces YouTube a formato embed. -->
+      </section>
+
+      <section class="board content-preview">
+        <div class="board-header">
+          <h3>Contenido activo</h3>
+          <span>Vista rapida</span>
+        </div>
+
+        <article class="content-row" *ngFor="let promotion of content.promotions.slice(0, 5)">
+          <div>
+            <strong>{{ promotion.title }}</strong>
+            <p>{{ promotion.body }}</p>
+            <small>{{ promotion.active ? 'Visible' : 'Oculto' }}</small>
+          </div>
+          <button type="button" class="ghost-btn" (click)="removePromotion(promotion.id)">
+            Quitar
+          </button>
+        </article>
+
+        <article class="content-row" *ngFor="let video of content.videos.slice(0, 5)">
+          <div>
+            <strong>{{ video.title }}</strong>
+            <p>{{ video.description }}</p>
+            <small>{{ video.active ? 'Visible' : 'Oculto' }}</small>
+          </div>
+          <button type="button" class="ghost-btn" (click)="removeVideo(video.id)">
+            Quitar
+          </button>
+        </article>
+      </section>
+    </div>
+  </section>
 
   <section class="crm-workspace">
     <div class="board-header">

@@ -25,6 +25,7 @@
 .cart-item,
 .totals-card,
 .customer-card,
+.location-summary,
 .billing-card,
 .helper {
   margin-bottom: 18px;
@@ -127,12 +128,29 @@
 }
 
 .customer-card,
+.location-summary,
 .billing-card,
 .totals-card {
   padding: 18px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.82);
   border: 1px solid var(--border-soft);
+}
+
+.location-summary {
+  background:
+    radial-gradient(circle at top right, rgba(255, 203, 31, 0.16), transparent 34%),
+    rgba(255, 255, 255, 0.9);
+}
+
+.location-summary strong {
+  display: block;
+  color: var(--navy-950);
+}
+
+.location-summary p,
+.location-summary small {
+  color: var(--text-700);
 }
 
 .section-title {
